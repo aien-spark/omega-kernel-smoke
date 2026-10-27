@@ -1,0 +1,22 @@
+AIEN Sovereign Ecosystem (AienOS / Omega / CUDA++ / INTERPLANE)
+Copyright 2024-2026 Drake Stapleton and AIEN Contributors (https://github.com/aien-dev)
+
+This product includes software developed as part of the AIEN Sovereign
+Ecosystem (https://www.aienos.com).
+
+TRADEMARK NOTICE:
+Pursuant to Section 6 of the Apache License, Version 2.0, this license does not
+grant permission to use the trade names, trademarks, service marks, or product
+names of the Licensor. "AIEN", "AienOS", "Aienux", "Omega", "CUDA++", "CUDApp",
+"INTERPLANE", and "FORGE" are trademarks of Drake Stapleton.
+
+Your own kernel.om, cases.tsv and reference.py in a repository created from this
+template are yours; this notice covers the template's tools and workflows.
+
+THIRD-PARTY COMPONENTS (fetched at check time, not stored in this repository):
+- omc, irspirv.om, opencl-host.c, parity.py: aien-dev/omega-mv, Apache-2.0,
+  pinned by commit and sha256 in toolchain.lock.
+- PoCL (https://github.com/pocl/pocl), MIT license, built from the commit named in
+  .github/workflows/toolchain.yml and published as a release asset of this repository.
+- Ubuntu 24.04 packages (LLVM 18, SPIRV-LLVM-Translator, SPIRV-Tools, ocl-icd),
+  installed with apt on the runner under their own licenses.

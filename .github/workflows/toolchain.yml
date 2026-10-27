@@ -1,0 +1,84 @@
+# Build the PoCL CPU OpenCL runtime that tools/fetch.sh pins, on the same GitHub-hosted
+# ubuntu-24.04-arm image the kernel check uses, self-test it with the demo kernel, and
+# (when publish is true) attach it with its sha256 to the release named in toolchain.lock.
+# Ubuntu's own PoCL 5.0 package is not used: it predates the SPIR-V path this check needs.
+name: Build PoCL toolchain asset
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the asset to the release tag in toolchain.lock
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  POCL_COMMIT: 888c9774b94590fff1afef003154ca2c0ea66605
+
+jobs:
+  pocl:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install build dependencies (Ubuntu LLVM 18)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            cmake ninja-build pkg-config clang-18 libclang-18-dev libclang-cpp18-dev llvm-18-dev \
+            llvm-spirv-18 libllvmspirvlib-18-dev ocl-icd-libopencl1 ocl-icd-opencl-dev \
+            opencl-c-headers spirv-tools zlib1g-dev libzstd-dev
+
+      - name: Build PoCL at the pinned commit
+        run: |
+          git init -q "$RUNNER_TEMP/pocl-src"
+          git -C "$RUNNER_TEMP/pocl-src" fetch -q --depth 1 https://github.com/pocl/pocl.git "$POCL_COMMIT"
+          git -C "$RUNNER_TEMP/pocl-src" checkout -q FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/pocl-src" rev-parse HEAD)" = "$POCL_COMMIT"
+          cmake -S "$RUNNER_TEMP/pocl-src" -B "$RUNNER_TEMP/pocl-build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/pocl \
+            -DWITH_LLVM_CONFIG=/usr/lib/llvm-18/bin/llvm-config -DSTATIC_LLVM=OFF -DENABLE_LLVM=ON \
+            -DENABLE_ICD=ON -DPOCL_ICD_ABSOLUTE_PATH=ON -DENABLE_SPIRV=ON \
+            -DENABLE_HOST_CPU_DEVICES=ON -DLLC_HOST_CPU=generic -DENABLE_HWLOC=OFF \
+            -DENABLE_RELOCATION=ON -DENABLE_POCLCC=ON -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF
+          cmake --build "$RUNNER_TEMP/pocl-build" --parallel "$(nproc)"
+          sudo cmake --install "$RUNNER_TEMP/pocl-build"
+
+      - name: Self-test with the demo kernel
+        run: |
+          sh tools/fetch.sh omega
+          . ./toolchain.lock
+          POCL_LIBRARY="/opt/pocl/$POCL_LIB" sh tools/check.sh
+
+      - name: Package (reproducible tar) and hash
+        run: |
+          . ./toolchain.lock
+          name=${POCL_ASSET%.tar.gz}
+          mkdir -p dist
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner \
+            --transform "s|^opt/pocl|$name|" -C / -cf - opt/pocl | gzip -n -9 > "dist/$POCL_ASSET"
+          (cd dist && sha256sum "$POCL_ASSET" > "$POCL_ASSET.sha256")
+          cat "dist/$POCL_ASSET.sha256" | tee -a "$GITHUB_STEP_SUMMARY"
+          printf 'POCL_COMMIT=%s\nLLVM=%s\n' "$POCL_COMMIT" "$(/usr/lib/llvm-18/bin/llvm-config --version)" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pocl-asset
+          path: dist/
+
+      - name: Publish release asset
+        if: inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . ./toolchain.lock
+          gh release view "$POCL_TAG" > /dev/null 2>&1 ||
+            gh release create "$POCL_TAG" --target "$GITHUB_SHA" --title "PoCL 7.2 @ ${POCL_COMMIT%${POCL_COMMIT#????????}} for ubuntu-24.04-arm" \
+              --notes "PoCL CPU OpenCL runtime built from pocl/pocl@$POCL_COMMIT against Ubuntu 24.04 LLVM 18 by run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. CPU device only; used by tools/check.sh to run SPIR-V on the CPU. sha256 in the .sha256 asset and in toolchain.lock."
+          gh release upload "$POCL_TAG" "dist/$POCL_ASSET" "dist/$POCL_ASSET.sha256"

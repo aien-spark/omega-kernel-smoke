@@ -1,0 +1,4 @@
+build/
+.okt/
+dist/
+__pycache__/

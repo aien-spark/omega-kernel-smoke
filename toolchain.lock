@@ -1,0 +1,20 @@
+# Pinned toolchain for the kernel check. Sourced by tools/fetch.sh and tools/check.sh.
+# Every file is fetched from GitHub at an exact commit or release and refused unless
+# its sha256 matches the value below. Change a pin only together with a passing run.
+
+# Omega compiler and the Omega SPIR-V translator, from aien-dev/omega-mv.
+OMEGA_MV_REPO=aien-dev/omega-mv
+OMEGA_MV_COMMIT=369dbc96daa1684db2d7c2c7085bbf16b3fd77ee
+OMC_SHA256=2c82480596bbdc50cda9626866209ef662d5834f278f839ff4ce0250c495029f
+IRSPIRV_OM_SHA256=8bbb2a7add58710a6ea7d73801cfe2b05d132c1d5f5048f01c46a1471869cabd
+OPENCL_HOST_C_SHA256=3ed2b4f16964e100b6cdec6011df02b80a7b78313bde13c72643a729133178f1
+PARITY_PY_SHA256=50fd9259189906d8a5e89a4fc457fee46d82de30778b886cfcacde50e2754417
+
+# PoCL 7.2 CPU OpenCL runtime, built on a GitHub ubuntu-24.04-arm runner by
+# .github/workflows/toolchain.yml (run 40426280728, self-test PASS) and published as a
+# release asset of this repository.
+POCL_REPO=aien-dev/omega-kernel-template
+POCL_TAG=pocl-7.2-888c9774-noble-arm64.1
+POCL_ASSET=pocl-7.2-888c9774-noble-arm64.tar.gz
+POCL_SHA256=68892ec0b43b2edbbee27ff3b799826af92a8cc061e0e5a111eca83e78166fbd
+POCL_LIB=lib/libpocl.so.2.16.0

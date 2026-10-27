@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0.0",
+  "name": "omega-kernel-template",
+  "layer": "tooling",
+  "purpose": "GitHub template: edit kernel.om, push, and Actions on ubuntu-24.04-arm compile it with pinned omc, run it natively on AArch64 and as SPIR-V on PoCL CPU, compare with reference.py, and publish a sha256 receipt. CPU evidence only."
+}

@@ -1,0 +1,8 @@
+# One case per line: fn name, then its arguments in order (decimal; true/false for bool).
+# The check also adds edge values and seeded random inputs for every fn.
+avg	4294967295	4294967293
+avg	7	10
+gcd	1836311903	2971215073
+gcd	0	0
+clamp	-5	0	10
+clamp	3	10	0
