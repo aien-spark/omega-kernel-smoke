@@ -30,3 +30,13 @@ ret hi
 end
 ret x
 end
+
+note Population count: number of 1 bits in x.
+fn popc x ulong to ulong
+n = ulong 0
+while ne x 0 bound 64
+x = and x sub x ulong 1
+n = add n ulong 1
+end
+ret n
+end

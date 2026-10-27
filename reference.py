@@ -20,3 +20,7 @@ def clamp(x, lo, hi):
     if lo > hi:
         raise Trap(3)  # noqa: F821 - provided by tools/cases.py
     return min(max(x, lo), hi)
+
+
+def popc(x):
+    return bin(x).count("1")
