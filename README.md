@@ -89,6 +89,19 @@ The kernel compiler and the SPIR-V translator are Omega. The glue around them is
   `reference.py` stays Python on purpose: an oracle independent of `omc`.
 - `opencl-host.c` and `parity.py` come from omega-mv `seed/spirv/`, where their status is tracked.
 
+## Human-Directed Agentic Engineering
+
+Current and future development follows Human-Directed Agentic Engineering (HDAE):
+humans define goals, architecture, constraints, acceptance criteria, and stopping
+points; agents implement, execute checks, diagnose failures, and revise within
+those boundaries. Human review retains responsibility for claims, acceptance,
+and release decisions. This describes the development method, not kernel runtime
+behavior or a retrospective claim about earlier receipts.
+
+For the documented method and a systems-software case study, see Gregory M.
+Kurtzer (2026), [*Ginux: Building an Independent Kernel That Runs Linux Userspace
+through Human-Directed Agentic Engineering*](https://doi.org/10.5281/zenodo.23682548).
+
 ## License
 
 Apache-2.0; see `LICENSE` and `NOTICE`.
